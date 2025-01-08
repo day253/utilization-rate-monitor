@@ -7,22 +7,22 @@ import * as si from "systeminformation";
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "utilization-rate-monitor" is now active!');
+    // Use the console to output diagnostic information (console.log) and errors (console.error)
+    // This line of code will only be executed once when your extension is activated
+    console.log('Congratulations, your extension "utilization-rate-monitor" is now active!');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('utilization-rate-monitor.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Utilization Rate Monitor!');
-	});
+    // The command has been defined in the package.json file
+    // Now provide the implementation of the command with registerCommand
+    // The commandId parameter must match the command field in package.json
+    const disposable = vscode.commands.registerCommand('utilization-rate-monitor.helloWorld', () => {
+        // The code you place here will be executed every time your command is executed
+        // Display a message box to the user
+        vscode.window.showInformationMessage('Hello World from Utilization Rate Monitor!');
+    });
 
-	context.subscriptions.push(disposable);
+    context.subscriptions.push(disposable);
 
-	let nvidiasmi = new NvidiaSmi();
+    let nvidiasmi = new NvidiaSmi();
     try {
         nvidiasmi.startNvidiaSmi();
     } catch (e) {
@@ -33,7 +33,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
 
 const digitChars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
@@ -44,8 +44,8 @@ class NvidiaSmi {
 
     constructor() {
         this.lock = false;
-		this._statusBarItem = undefined;
-		this._interval = undefined;
+        this._statusBarItem = undefined;
+        this._interval = undefined;
     }
 
     public async updateNvidiaSmi() {
@@ -70,10 +70,10 @@ class NvidiaSmi {
         const gpus = await si.graphics();
         const levels_gpu = gpus.controllers.map(controller => controller.utilizationGpu);
         const levels_mem = gpus.controllers.map(controller => controller.utilizationMemory);
-        
+
         const cpuData = await si.currentLoad();
         const cpuUsage = cpuData.currentLoad;
-        
+
         const memData = await si.mem();
         const memUsage = (memData.used / memData.total) * 100;
 
@@ -89,7 +89,7 @@ class NvidiaSmi {
     }
 
     public async stopNvidiaSmi() {
-		clearInterval(this._interval);
+        clearInterval(this._interval);
         if (this._statusBarItem) {
             this._statusBarItem.text = "";
             this._statusBarItem.tooltip = "";
@@ -106,6 +106,6 @@ class NvidiaSmi {
     }
 
     dispose() {
-		this.stopNvidiaSmi();
+        this.stopNvidiaSmi();
     }
 }
