@@ -22,14 +22,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(disposable);
 
-    let nvidiasmi = new NvidiaSmi();
+    let utilizationrate = new UtilizationRate();
     try {
-        nvidiasmi.startNvidiaSmi();
+        utilizationrate.start();
     } catch (e) {
         console.log(e);
     }
 
-    context.subscriptions.push(nvidiasmi);
+    context.subscriptions.push(utilizationrate);
 }
 
 // This method is called when your extension is deactivated
@@ -37,7 +37,7 @@ export function deactivate() { }
 
 const digitChars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
-class NvidiaSmi {
+class UtilizationRate {
     private _statusBarItem: vscode.StatusBarItem | undefined;
     private _interval: NodeJS.Timeout | undefined;
     public lock: boolean;
@@ -48,13 +48,13 @@ class NvidiaSmi {
         this._interval = undefined;
     }
 
-    public async updateNvidiaSmi() {
+    public async update() {
         if (this.lock) {
             return;
         }
         try {
             this.lock = true;
-            const { text, tooltip } = await this.textAndTooltip();
+            const { text, tooltip } = await this.information();
             if (this._statusBarItem) {
                 this._statusBarItem.text = text;
                 this._statusBarItem.tooltip = tooltip;
@@ -66,7 +66,7 @@ class NvidiaSmi {
         }
     }
 
-    public async textAndTooltip() {
+    public async information() {
         const gpus = await si.graphics();
         const levels_gpu = gpus.controllers.map(controller => controller.utilizationGpu);
         const levels_mem = gpus.controllers.map(controller => controller.utilizationMemory);
@@ -88,7 +88,7 @@ class NvidiaSmi {
         return { text, tooltip };
     }
 
-    public async stopNvidiaSmi() {
+    public async stop() {
         clearInterval(this._interval);
         if (this._statusBarItem) {
             this._statusBarItem.text = "";
@@ -97,15 +97,15 @@ class NvidiaSmi {
         }
     }
 
-    public async startNvidiaSmi() {
+    public async start() {
         this._interval = setInterval(() => {
-            this.updateNvidiaSmi();
+            this.update();
         }, 2000);
         this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
         this._statusBarItem.show();
     }
 
     dispose() {
-        this.stopNvidiaSmi();
+        this.stop();
     }
 }
