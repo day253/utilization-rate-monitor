@@ -12,12 +12,60 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "utilization-rate-monitor.helloWorld",
-        "title": "Hello World"
+    "configuration": {
+      "title": "Monitor Pro",
+      "properties": {
+        "monitor-pro.metrics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "cpu",
+              "memoryActive",
+              "memoryUsed",
+              "network",
+              "fileSystem",
+              "battery",
+              "cpuTemp",
+              "cpuSpeed",
+              "osDistro",
+              "diskSpace",
+              "uptime"
+            ]
+          },
+          "default": [
+            "cpu",
+            "memoryActive",
+            "memoryUsed",
+            "network",
+            "fileSystem",
+            "battery",
+            "cpuTemp",
+            "cpuSpeed",
+            "osDistro",
+            "diskSpace",
+            "uptime"
+          ],
+          "description": "%config.metrics%"
+        },
+        "monitor-pro.refresh-interval": {
+          "type": "number",
+          "default": 3000,
+          "description": "%config.refresh-interval%"
+        },
+        "monitor-pro.diskSpace": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "all",
+            "C:"
+          ],
+          "description": "%config.diskSpace%"
+        }
       }
-    ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
