@@ -1,77 +1,33 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
-import metrics from './metrics';
+import { ExtensionContext } from 'vscode';
+import { powerShellRelease, powerShellStart } from "systeminformation";
+import Monitor from './monitor';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "utilization-rate-monitor" is now active!');
-    let utilizationrate = new UtilizationRate();
-    try {
-        utilizationrate.start();
-    } catch (e) {
-        console.log(e);
+let monitor: Monitor | null = null;
+let interval: NodeJS.Timeout;
+
+export function activate(ctx: ExtensionContext) {
+    if (process.platform === "win32") {
+        powerShellStart();
     }
-    context.subscriptions.push(utilizationrate);
-    const disposable = vscode.commands.registerCommand('utilization-rate-monitor.helloWorld', () => {
-        vscode.window.showInformationMessage('Hello World from Utilization Rate Monitor!');
-    });
-    context.subscriptions.push(disposable);
+    if (monitor) {
+        monitor.dispose();
+    }
+    monitor = new Monitor();
+    monitor.StartUpdating();
+    interval = setInterval(async () => {
+        if (monitor) {
+            await monitor.update();
+        }
+    }, 2000);
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() { }
-
-class UtilizationRate {
-    private _statusBarItem: vscode.StatusBarItem | undefined;
-    private _interval: NodeJS.Timeout | undefined;
-    public lock: boolean;
-
-    constructor() {
-        this.lock = false;
-        this._statusBarItem = undefined;
-        this._interval = undefined;
+export function deactivate() {
+    if (process.platform === "win32") {
+        powerShellRelease();
     }
-
-    public async update() {
-        if (this.lock) {
-            return;
-        }
-        try {
-            this.lock = true;
-            const { text, tooltip } = await metrics();
-            if (this._statusBarItem) {
-                this._statusBarItem.text = text;
-                this._statusBarItem.tooltip = tooltip;
-            }
-            this.lock = false;
-        } catch (e) {
-            console.log(e);
-            this.lock = false;
-        }
-    }
-
-    public async stop() {
-        clearInterval(this._interval);
-        if (this._statusBarItem) {
-            this._statusBarItem.text = "";
-            this._statusBarItem.tooltip = "";
-            this._statusBarItem.dispose();
-        }
-    }
-
-    public async start() {
-        this._interval = setInterval(() => {
-            this.update();
-        }, 2000);
-        this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
-        this._statusBarItem.show();
-    }
-
-    dispose() {
-        this.stop();
+    clearInterval(interval);
+    if (monitor) {
+        monitor.dispose();
+        monitor = null;
     }
 }
